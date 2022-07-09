@@ -1,0 +1,7 @@
+Este es el link de acceso a github:
+
+https://github.com/stevencat96/aplicacion_analisis_de_datos
+
+Link de la aplicacion:
+
+https://stevencat96-aplicacion-analisis-de-datos-aplicacion-i18w49.streamlitapp.com/predictivo
