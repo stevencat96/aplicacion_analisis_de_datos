@@ -219,54 +219,54 @@ if 'Area del terreno' in OptFiltro:
 
 # # Mapas 
 
-# import plotly.express as px
-# import pandas as pd
+import plotly.express as px
+import pandas as pd
 
 
-# # info geojson
-# url2 = 'https://raw.githubusercontent.com/sebmatecho/CienciaDeDatos/master/ProyectoPreciosCasas/data/KingCount.geojson'
-# col1, col2 = st.columns(2)
+# info geojson
+url2 = 'https://raw.githubusercontent.com/sebmatecho/CienciaDeDatos/master/ProyectoPreciosCasas/data/KingCount.geojson'
+#col1, col2 = st.columns(2)
 
-# with col1: 
-#       st.header("Ubicación y detalles de casas disponibles")
-#       mapa = folium.Map(location=[data['lat'].mean(), data['long'].mean()], zoom_start=9)
-#       markercluster = MarkerCluster().add_to(mapa)
-#       for nombre, fila in data.iterrows():
-#            folium.Marker([fila['lat'],fila['long']],
-#                           popup = 'Precio: ${} Fecha: {} \n {} habitaciones \n {} baños \n constuida en {} \n área de {} pies cuadrados \n Precio por pie cuadrado: {}'.format(
-#                           fila['price'],
-#                           fila['date'],
-#                           fila['bedrooms'],
-#                           fila['bathrooms'],
-#                           fila['sqft_above'], 
-#                           fila['sqft_living'], 
-#                           fila['price/sqft'])
-#            ).add_to(markercluster)
-#       folium_static(mapa)
+#with col1: 
+st.header("Ubicación y detalles de casas disponibles")
+mapa = folium.Map(location=[data['lat'].mean(), data['long'].mean()], zoom_start=9)
+markercluster = MarkerCluster().add_to(mapa)
+for nombre, fila in data.iterrows():
+     folium.Marker([fila['lat'],fila['long']],
+                    popup = 'Precio: ${} Fecha: {} \n {} habitaciones \n {} baños \n constuida en {} \n área de {} pies cuadrados \n Precio por pie cuadrado: {}'.format(
+                    fila['price'],
+                    fila['date'],
+                    fila['bedrooms'],
+                    fila['bathrooms'],
+                    fila['sqft_above'], 
+                    fila['sqft_living'], 
+                    fila['price/sqft'])
+     ).add_to(markercluster)
+folium_static(mapa)
 
-# import plotly.express as px
+import plotly.express as px
 
 # with col2:
-#      url3 = 'https://raw.githubusercontent.com/sebmatecho/CienciaDeDatos/master/ProyectoPreciosCasas/data/kc_house_data.csv'
-
-     
-#      #data= pd.read_csv(url)
-
-#      houses = data.loc[data['price']<=2500000, ['id','lat','long','price']]
-#      fig = px.scatter_mapbox(data_frame=houses,
-#                               lat = 'lat',
-#                               lon = 'long',
-#                               size = 'price',
-#                               color = 'price') 
-#      fig.update_layout(mapbox_style="open-street-map")
-#      fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+#url3 = 'https://raw.githubusercontent.com/sebmatecho/CienciaDeDatos/master/ProyectoPreciosCasas/data/kc_house_data.csv'
 
 
-#      st.plotly_chart(fig , use_container_width=True)
+#data= pd.read_csv(url)
+
+houses = data.loc[data['price']<=2500000, ['id','lat','long','price']]
+fig = px.scatter_mapbox(data_frame=houses,
+                         lat = 'lat',
+                         lon = 'long',
+                         size = 'price',
+                         color = 'price') 
+fig.update_layout(mapbox_style="open-street-map")
+fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+
+
+st.plotly_chart(fig , use_container_width=True)
 
 # # Estadística Descriptiva 
 att_num = data.select_dtypes(include = ['int64','float64'])
-st.dataframe(att_num)
+#st.dataframe(att_num)
 media = pd.DataFrame(att_num.apply(np.mean))
 mediana = pd.DataFrame(att_num.apply(np.median))
 std = pd.DataFrame(att_num.apply(np.std))
@@ -288,20 +288,3 @@ col1.metric("No. Casas", data.shape[0],str(100*round(data.shape[0]/data_ref.shap
 col2.metric("No. Casas Nuevas (Construida después de 2000)",data[data['house_age'] == 'new_house'].shape[0],str(100*round(data[data['house_age'] == 'new_house'].shape[0]/data_ref.shape[0],4))+'% de las casas disponibles',delta_color="off")
 st.dataframe(df_EDA)  
 
-# st.header('Algunas tendencias')
-
-
-# col1, col2 = st.columns(2)
-# with col1: 
-#      st.write('Evolución del precio por tipo de propiedad y año de construcción')
-#      data['dormitory_type']=data['bedrooms'].apply(lambda x: 'Estudio' if x <=1 else 'Apartamento' if x==2 else 'Casa' )
-#      df = data[['yr_built', 'price','dormitory_type']].groupby(['yr_built','dormitory_type']).mean().reset_index()
-#      with sns.axes_style("darkgrid"):
-#           plt.style.use('dark_background')
-#           fig = plt.figure(figsize=(7,7)) # try different values
-#           fig = sns.lineplot(x ='yr_built', y= 'price', data = df, hue="dormitory_type", style="dormitory_type")
-#           fig.set_xlabel("Año de Construcción", fontsize = 17)
-#           fig.set_ylabel("Precio (Millones de Dólares)", fontsize = 17)
-#           fig.legend(title='Tipo de propiedad', loc='upper right', labels=['Apartamento', 'Casa','Estudio'])
-#           fig = fig.figure
-#           st.pyplot(fig)
