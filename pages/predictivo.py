@@ -1,196 +1,231 @@
-from re import template
-from PIL import Image
-import streamlit as st
-import pandas as pd
-import joblib
+import json
+import folium
+import pickle
 import numpy as np
-import boto3
-import tempfile
+import pandas as pd
+import seaborn as sns
+import streamlit as st
+import matplotlib.pyplot as plt
 
-st.set_page_config(page_title='App - Pronóstico',
-                    layout="wide", 
-                    page_icon='🎱',  
-                    initial_sidebar_state="expanded")
+from PIL                      import Image
+from plotly                   import express as px
+from warnings                 import filterwarnings
+from folium.plugins           import MarkerCluster
+from streamlit_folium         import folium_static
+from matplotlib.pyplot        import figimage
+from distutils.fancy_getopt   import OptionDummy
+# filterwarnings('ignore')
+# st.set_page_config(page_title='App - Pronóstico',
+#                     layout="wide", 
+#                     page_icon='🚀',  
+#                     initial_sidebar_state="expanded")
 
-st.title("Pronosticando precios de casas")
-st.sidebar.markdown("Características")
+# st.title("Pronosticando precios de casas")
+# st.sidebar.markdown("Características")
 
-@st.cache
-def get_data():
-     url = 'https://raw.githubusercontent.com/sebmatecho/CienciaDeDatos/master/ProyectoPreciosCasas/data/kc_house_data.csv'
-     return pd.read_csv(url)
+# # @st.cache
+# def get_data(allow_output_mutation=True):
+#     url = 'https://raw.githubusercontent.com/sebmatecho/CienciaDeDatos/master/ProyectoPreciosCasas/data/kc_house_data.csv'
+#     # url = 'kc_house_data.csv'
+#     return pd.read_csv(url)
 
-data = get_data()
+# data = get_data()
+# datta = data.copy()
+# datta['price/sqft'] = datta['price']/datta['sqft_living']
+# datta['year_old'] = 2020-datta['yr_built']
+# datta = datta.drop(columns=['price'])
+# ### banios info
+# banhos = st.sidebar.select_slider(
+#           'Número de Baños',
+#           options=list(sorted(set(datta['bathrooms']))), value=0.75)
 
+# ### habitaciones info
+# habitaciones = st.sidebar.number_input('Número de habitaciones', min_value=1, max_value=11, value=2, step=1)
 
+# ### area info
+# area = st.sidebar.number_input('Área del inmueble', value=1020)
 
-# client = boto3.client('s3',
-#         aws_access_key_id =  st.secrets["AWSAccessKeyId"],
-#         aws_secret_access_key = st.secrets["AWSSecretKey"]
-#         )
+# ### area de troncos
+# area_lote = st.sidebar.number_input('Área de lote', value=1076)
 
-X = pd.DataFrame()
-banhos = st.sidebar.select_slider(
-          'Número de Baños',
-          options=list(sorted(set(data['bathrooms']))))
-
-X.loc[0,'bathrooms'] = banhos
-# scaler = joblib.load('../parameters/bathrooms.sav')
-# X[['bathrooms']] = scaler.transform(X[['bathrooms']])
-
+# ### pisos info
 # pisos = st.sidebar.select_slider(
 #           'Número de Pisos',
-#           options=list(sorted(set(data['floors']))))
+#           options=list(sorted(set(datta['floors']))), value=2)
 
+# ### info vista al mar: si/no
+# waterfront = st.sidebar.selectbox(
+#      '¿Vista al agua?',
+#      ('Sí', 'No'))
+
+# if waterfront == 'Sí': 
+#     waterfront = 1
+# else:  
+#     waterfront = 0
+
+# ### info calidad de la vista
+# vista = st.sidebar.selectbox(
+#      'Puntaje de la vista',
+#      (0,1,2,3,4))
+
+# ### info estado de la casa
+# condicion = st.sidebar.selectbox(
+#      'Condición del inmueble',
+#      (1, 2, 3, 4, 5))
+
+# ### info grado de constuccion
+# puntaje =  st.sidebar.selectbox(
+#      'Puntaje de construcción',
+#      (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13))
+
+# ### area 1 info
+# area_arriba = st.sidebar.number_input('Área sin sótano', value=1020)
+
+# ### area 2 info
+# area_abajo = st.sidebar.select_slider(
+#           'Área del sótano',
+#           options=list(sorted(set(datta['sqft_basement']))), value=0)
+
+# ### code info
+# zipcode = st.sidebar.select_slider(
+#           'Codigo postal de la vivienda',
+#           options=list(sorted(set(datta['zipcode']))), value=98144)
+
+# ### info edad de la casa
+# edad = st.sidebar.number_input('Edad', min_value=1, max_value=120, value=12, step=1)
+
+# ### info renovacion si/no
+# renovacion = st.sidebar.selectbox(
+#      '¿Renovación?',
+#      ('Sí', 'No'))
+
+# if renovacion == 'Sí': 
+#     renovacion = 1
+# else:  
+#     renovacion = 0
+
+# ### asiganacion de valores del vector
+# X = pd.DataFrame()
+
+# X.loc[0,'bedrooms'] = habitaciones
+# X.loc[0,'bathrooms'] = banhos
+# X.loc[0,'sqft_living'] = area
+# X.loc[0,'sqft_lot'] = area_lote
 # X.loc[0,'floors'] = pisos
-# scaler = joblib.load('../parameters/floors.sav')
-# X[['floors']] = scaler.transform(X[['floors']])
+# X.loc[0,'waterfront'] = waterfront
+# X.loc[0,'view'] = vista
+# X.loc[0,'condition'] = condicion
+# X.loc[0,'grade'] = puntaje
+# X.loc[0,'sqft_above'] = area_arriba
+# X.loc[0,'sqft_basement'] = area_abajo
+# X.loc[0,'zipcode'] = zipcode
+# X.loc[0,'year_old'] = edad
+# X.loc[0,'renovated_status'] = renovacion
 
-
-habitaciones = st.sidebar.number_input('Número de habitaciones', min_value=1, max_value=10, value=3, step=1)
-
-X.loc[0,'bedrooms'] = habitaciones
-# scaler = joblib.load('../parameters/bedrooms.sav')
-
-# X[['bedrooms']] = scaler.transform(X[['bedrooms']])
-
-area = st.sidebar.number_input('Área del inmueble')
-
-X.loc[0,'sqft_living'] = area
-# scaler = joblib.load('../parameters/sqft_living.sav')
-# X[['sqft_living']] = scaler.transform(X[['sqft_living']])
-
-
-waterfront = st.sidebar.selectbox(
-     'Vista al agua',
-     ('Sí', 'No'))
-
-if waterfront == 'Sí': 
-    waterfront = 1
-else:  
-    waterfront = 0
-
-X.loc[0,'waterfront'] = waterfront
-# scaler = joblib.load('../parameters/waterfront.sav')
-# X[['waterfront']] = scaler.transform(X[['waterfront']])
-
-vista = st.sidebar.selectbox(
-     'Puntaje de la vista',
-     (0,1,2,3,4))
-
-X.loc[0,'view'] = vista
-# scaler = joblib.load('../parameters/view.sav')
-# X[['view']] = scaler.transform(X[['view']])
-
-
-
-condicion = st.sidebar.selectbox(
-     'Condición del inmueble',
-     (0,1,2,3,4))
-
-X.loc[0,'condition'] = condicion
-# scaler = joblib.load('../parameters/condition.sav')
-# X[['condition']] = scaler.transform(X[['condition']])
-
-
-puntaje =  st.sidebar.selectbox(
-     'Puntaje de construcción',
-     (3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13))
-
-
-X.loc[0,'grade'] = puntaje
-# scaler = joblib.load('../parameters/grade.sav')
-# X[['grade']] = scaler.transform(X[['grade']])
-
-
-renovacion = st.sidebar.selectbox(
-     'Renovación?',
-     ('Sí', 'No'))
-
-if renovacion == 'Sí': 
-    renovacion = 1
-else:  
-    renovacion = 0
-
-X.loc[0,'yr_renovated_dummy'] = renovacion
-# scaler = joblib.load('../parameters/yr_renovated_dummy.sav')
-# X[['yr_renovated_dummy']] = scaler.transform(X[['yr_renovated_dummy']])
-
-
-edad = st.sidebar.number_input('Edad', min_value=1, max_value=100, value=20, step=1)
-
-X.loc[0,'property_age'] = edad
-# scaler = joblib.load('../parameters/property_age.sav')
-# X[['property_age']] = scaler.transform(X[['property_age']])
-
-lat = st.sidebar.slider('Latitud', 47.1559,47.7776, 47.46675)
-
-X.loc[0,'lat'] = lat
-
-long = st.sidebar.slider('Longitud',-122.503 ,-121.315, -121.9089)
-
-X.loc[0,'long'] = long
-
-variables = ['bedrooms', 'bathrooms', 'sqft_living', 'waterfront', 'view', 'condition', 'grade', 'yr_renovated_dummy', 'property_age','lat','long']
-
-# for nombre in variables: 
-#      with tempfile.TemporaryFile() as fp: 
-#           client.download_fileobj(Fileobj = fp, 
-#                                    Bucket = 'precioscasas',
-#                                    Key = nombre+'.sav'
-#           )
-#           fp.seek(0)
-#           scaler = joblib.load(fp)
-#           X[[nombre]] = scaler.transform(X[[nombre]])
-
-@st.cache
-def transformation(nombre): 
-     with tempfile.TemporaryFile() as fp: 
-               client.download_fileobj(Fileobj = fp, 
-                                        Bucket = 'precioscasas',
-                                        Key = nombre+'.sav'
-               )
-               fp.seek(0)
-               scaler = joblib.load(fp)
-     return scaler
-
+# ### informacion por pantalla
+# st.markdown("""
+# En esta pestaña, un modelo de Machine Learning ha sido disponibilizado para generar pronósticos de precios  basado en las propuidades del inmueble. El usuario deberá suministrar las características de tal inmueble utilizando el menú de la barra izquierda. A continuación se definen la información requerida. :
      
-for nombre in variables: 
-     scaler_inner = transformation(nombre)
-     X[[nombre]] = scaler_inner.transform(X[[nombre]])
+# - Número de baños: Número de baños de la propiedad a sugerir precio. Valores como 1.5 baños se refiere a la existencia de un baño con ducha y un baño sin dicha. 
+# - Número de habitaciones: Número de habitaciones de la propiedad a sugerir precio
+# - Área del inmueble: Área en pies cuadrados de la propiedad a sugerir precio
+# - Área de lote: Área en pies cuadrados del terreno.
+# - Número de pisos: Número de pisos de la propiedad a sugerir precio
+# - Vista al agua: La propiedad a sugerir precio tiene vista al agua?
+# - Puntaje de la vista: Puntaje de la vista de la propiedad a sugerir precio.
+# - Condición del inmueble: Condición general de la propiedad a sugerir precio.
+# - Puntaje sobre la construcción: Puntja sobre la construcción de la propiedad a sugerir precio
+# - Área sin sótano: Área en pies cuadrados de la vivienda sin contar el sótano.
+# - Área del sótano: Área en pies cuadrados del sótano de la vivienda.
+# - Código postal de la vivienda: Número de identificación de cada vivienda.
+# - Edad de la propiedad: La antiguedad de la propiedad a sugerir precio. 
+# - Renovación: La propiedad a sugerir precio ha sido renovada?
+#     """)
+
+# variables = ['bedrooms', 'bathrooms', 'sqft_living', 'sqft_lot', 'floors',
+#              'waterfront', 'view', 'condition', 'grade', 'sqft_above', 'sqft_basement', 
+#              'zipcode', 'year_old', 'renovated_status']
+
+# params = {'Habitaciones':['bedrooms', habitaciones],
+#           'Baños':['bathrooms', banhos],
+#           'Pisos':['floors', pisos],
+#           'Edad':['year_old', edad]
+#          }
+
+# OptFiltro = st.multiselect(
+#      'Variables a incluir en los filtros:',
+#      ['Habitaciones', 'Baños', 'Pisos', 'Edad'],
+#      ['Baños'])
 
 
-st.markdown("""
-En esta pestaña, un modelo de Machine Learning ha sido disponibilizado para generar pronósticos de precios  basado en las propuidades del inmueble. El usuario deberá suministrar las características de tal inmueble utilizando el menú de la barra izquierda. A continuación se definen la información requerida. :
-     
-- Número de baños: Número de baños de la propiedad a sugerir precio. Valores como 1.5 baños se refiere a la existencia de un baño con ducha y un baño sin dicha. 
-- Número de pisos: Número de pisos de la propiedad a sugerir precio
-- Número de habitaciones: Número de habitaciones de la propiedad a sugerir precio
-- Área del inmueble: Área en pies cuadrados de la propiedad a sugerir precio
-- Vista al agua: La propiedad a sugerir precio tiene vista al agua?
-- Puntaje de la vista: Puntaje de la vista de la propiedad a sugerir precio.
-- Condición del inmueble: Condición general de la propiedad a sugerir precio.
-- Puntaje sobre la construcción: Puntja sobre la construcción de la propiedad a sugerir precio
-- Renovación: La propiedad a sugerir precio ha sido renovada?
-- Edad de la propiedad: La antiguedad de la propiedad a sugerir precio. 
-    """)
 
+# col1, col2 = st.columns(2)
 
-if st.sidebar.button('Los parámetros han sido cargados. Calcular precio'):
+# with col1:
 
-     with tempfile.TemporaryFile() as fp: 
-          client.download_fileobj(Fileobj = fp, 
-                                   Bucket = 'precioscasas',
-                                   Key = 'xbg_final.sav'
-          )
-          fp.seek(0)
-          modelo_final = joblib.load(fp)
-     precio = modelo_final.predict(X)[0]
-     st.balloons()
-     st.success('El precio ha sido calculado')
-#     st.write('El precio sugerido es:', )
-     st.metric("Precio Sugerido", np.expm1(precio), )
-else:
-     st.snow()
-     st.error('Por favor, seleccione los parámatros de la propiedad a estimar el precio.')
-     
+#     data_v2 = datta.copy()
+#     for filtro in OptFiltro:
+#         (llave, variable) = params[filtro]
+#         data_v2 = data_v2[data_v2[llave]==variable]
+
+#     data_v2['zipcode'] = data_v2['zipcode'].astype(str)
+
+#     st.header("Ubicación y detalles de casas disponibles acorde a los requerimientos del cliente.")
+#     mapa = folium.Map(location=[data_v2['lat'].mean(), data_v2['long'].mean()], zoom_start=9)
+#     markercluster = MarkerCluster().add_to(mapa)
+#     for nombre, fila in data_v2.iterrows():
+#         folium.Marker([fila['lat'],fila['long']],
+#                          popup = 'Fecha: {} \n {} habitaciones \n {} baños \n constuida en {} \n área de {} pies cuadrados \n Precio por pie cuadrado: {}'.format(
+#                          fila['date'],
+#                          fila['bedrooms'],
+#                          fila['bathrooms'],
+#                          fila['yr_built'], 
+#                          fila['sqft_living'], 
+#                          fila['price/sqft'])
+#           ).add_to(markercluster)
+#     folium_static(mapa)
+
+# col1, col2 = st.columns(2)
+# with col1:
+
+#     data_v3 = datta.copy()
+#     data_v3['zipcode'] = data_v3['zipcode'].astype(str)
+#     st.header("Costo de pie cuadrado por código postal")
+#     data_aux = data_v3[['price/sqft','zipcode']].groupby('zipcode').mean().reset_index()
+#     custom_scale = (data_aux['price/sqft'].quantile((0,0.2,0.4,0.6,0.8,1))).tolist()
+
+#     mapa = folium.Map(location=[data_v3['lat'].mean(), data_v3['long'].mean()], zoom_start=8)
+#     url2 = 'https://raw.githubusercontent.com/sebmatecho/CienciaDeDatos/master/ProyectoPreciosCasas/data/KingCount.geojson'
+#     folium.Choropleth(geo_data=url2, 
+#                         data=data_aux,
+#                         key_on='feature.properties.ZIPCODE',
+#                         columns=['zipcode', 'price/sqft'],
+#                         threshold_scale=custom_scale,
+#                         fill_color='YlOrRd',
+#                         highlight=True).add_to(mapa)
+#     folium_static(mapa)
+
+# # OptFiltro = st.multiselect(
+# #      'Variables a incluir en los filtros:',
+# #      ['Habitaciones', 'Baños', 'Área construida (pies cuadrados)','Pisos','Vista al agua','Evaluación de la propiedad','Condición'],
+# #      ['Habitaciones', 'Baños'])
+
+# ### se carga el model xgboost para la estimacion del valor de la casa
+# ### se muestra por panatalla
+# if st.sidebar.button('Los parámetros han sido cargados. Calcular precio'):
+
+#     modelo_final = pickle.load(open('model_x.sav', 'rb'))
+#     vector = np.array(list(X.loc[0])).reshape(-1, 1).T
+#     precio = modelo_final.predict(vector)[0]
+#     st.balloons()
+#     st.success('El precio ha sido calculado')
+#     # st.write('El precio sugerido es:', )
+#     # st.metric("Precio Sugerido", np.expm1(precio), str(list(X.loc[0])))
+#     st.metric("Precio Estimado:", f"${np.float(round(precio, 2))}")
+
+#     st.header(f"Un total de {data_v2.shape[0]} casas coinciden con las caracteristicas requeridas por el usuario.")
+#     st.dataframe(data_v2)  
+
+# else:
+#     st.snow()
+#     st.error('Por favor, seleccione los parámatros de la propiedad a estimar el precio.')
