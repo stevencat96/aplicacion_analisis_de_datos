@@ -20,7 +20,7 @@ st.set_page_config(page_title='App - Pronóstico',
                     page_icon='👽',  
                     initial_sidebar_state="expanded")
 
-st.title("Prediccion en preciosa de casas")
+st.title("Prediccion en precios de casas")
 st.sidebar.markdown("Filtros acotadores")
 
 # @st.cache
@@ -129,7 +129,7 @@ with col1:
 ### se muestra por panatalla
 if st.sidebar.button('Los parámetros han sido cargados. Calcular precio'):
 
-    modelo_final = pickle.load(open('xbg_final', 'rb'))
+    modelo_final = pickle.load(open('../xbg_final', 'rb'))
     vector = np.array(list(X.loc[0])).reshape(-1, 1).T
     precio = modelo_final.predict(vector)[0]
     st.balloons()
